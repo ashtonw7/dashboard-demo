@@ -1,14 +1,14 @@
 'use client'
 
-type Props = {
+interface Props {
     chartId: string,
     containerStyle: React.CSSProperties,
 }
 
-export default function Chart({chartId, containerStyle}: Props){
+export default function Chart({chartId, containerStyle}: Props) {
     return(
         <>
-            
+
         </>
     )
 }

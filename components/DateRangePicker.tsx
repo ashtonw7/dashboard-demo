@@ -15,11 +15,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-type Props = {
+interface Props {
     setDashBoardDate: Function,
 }
 
-export default function DateRangePicker({setDashBoardDate}: Props){
+export default function DateRangePicker({setDashBoardDate}: Props) {
 
     const [date, setDate] = useState<DateRange | undefined>({
         from: new Date(2022, 0, 20),
