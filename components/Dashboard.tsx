@@ -27,9 +27,11 @@ const comparisonOptions = {
 }
 
 export default function Dashboard({name, containerStyle, onClickDashboardItem}: Props) {
-    const [date, setDate] = useState<DateRange | undefined>({
-        from: new Date(2022, 0, 20),
-        to: addDays(new Date(2022, 0, 20), 20),
+    const [today, setToday] = useState<Date>(new Date());
+    
+    const [dateRange, setDateRange] = useState<DateRange | undefined>({
+        from: new Date(today.getFullYear(), today.getMonth(), 1),
+        to: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
     })
 
 
@@ -39,11 +41,16 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
     return(
         <div style={containerStyle}>
             <div className='flex flex-row justify-left items-center gap-4 mt-2 ml-2'>
-                <DateRangePicker setDashBoardDate={setDate} />
+                <DateRangePicker parentDate={dateRange} setDashBoardDate={setDateRange} />
                 <PresetDropdown selected={preset} setSelected={setPreset} options={presetOptions} />
                 <span className='text-sm text-center text-gray-700'>compared to</span>
                 <PresetDropdown selected={comparison} setSelected={setComparison} options={comparisonOptions} />
-                <span className='text-xl text-center text-gray-700'>{preset}{comparison}</span>
+            </div>
+            <div id="debug" className='flex flex-col items-start mt-10 ml-3'>
+                <span className='text-xl text-center text-gray-700'>Preset: {preset}</span>
+                <span className='text-xl text-center text-gray-700'>Comparison: {comparison}</span>
+                <span className='text-xl text-center text-gray-700'>Date Range From: {dateRange?.from?.toString()}</span>
+                <span className='text-xl text-center text-gray-700'>Date Range To: {dateRange?.to?.toString()}</span>
             </div>
         </div>
     )

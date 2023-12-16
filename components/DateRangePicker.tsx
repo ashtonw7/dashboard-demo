@@ -9,6 +9,7 @@ import { DateRange } from "react-day-picker"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
+
 import {
   Popover,
   PopoverContent,
@@ -16,14 +17,15 @@ import {
 } from "@/components/ui/popover"
 
 interface Props {
+    parentDate: DateRange | undefined,
     setDashBoardDate: Function,
 }
 
-export default function DateRangePicker({setDashBoardDate}: Props) {
+export default function DateRangePicker({parentDate, setDashBoardDate}: Props) {
 
     const [date, setDate] = useState<DateRange | undefined>({
-        from: new Date(2022, 0, 20),
-        to: addDays(new Date(2022, 0, 20), 20),
+        from: parentDate?.from,
+        to: parentDate?.to,
     })
 
     useEffect(() => {
