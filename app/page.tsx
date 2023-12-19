@@ -27,6 +27,8 @@ export default function Home() {
   const [dashboardName, setDashboardName] = useState("Test");
   const [dashboardStyles, setDashBoardStyles] = useState({
     fontSize: "1.5rem",
+    marginLeft: "1%",
+    marginTop: "1%"
   })
 
   return (

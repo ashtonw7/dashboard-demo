@@ -36,13 +36,14 @@ const comparisonOptions = {
 const defaultDashboardName = "CompanyA";
 
 const today = new Date();
+today.setHours(0, 0, 0, 0);
 
 const lastThirty = {
-    from: sub(today, {days: 30}),
+    from: sub(today, {days: 29}),
     to: today
 }
 const lastNinety = {
-    from: sub(today, {days: 90}),
+    from: sub(today, {days: 89}),
     to: today
 }
 
@@ -118,7 +119,10 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
 
     useEffect(() => {
         const getDashboardData = async () => {
-            let { data }: any = await supabase.from('dashboard').select('name, dateFilter').eq('name', defaultDashboardName);
+            let { data }: any = await supabase.
+                from('dashboard')
+                .select('*')
+                .eq('name', defaultDashboardName);
             data = data[0]
             setDashboardData({
                 dashboardName: data.name,
@@ -133,7 +137,11 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
         if (dashboardData){
             setInitialDateRange(dashboardData.initialDateRange);
             const getChartData = async() => {
-                const { data }: any = await supabase.from('chart').select('id').eq('dashboardName', dashboardData?.dashboardName);
+                const { data }: any = await supabase
+                    .from('chart')
+                    .select('id')
+                    .eq('dashboardName', dashboardData?.dashboardName)
+                    .order('id', {ascending: true});
                 setChartData(data);
             }
             getChartData();
@@ -163,24 +171,29 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
     }, [comparison]);
 
     useEffect(() => {
-        if (dateRange !== lastThirty && dateRange !== lastNinety && dateRange !== currMonth){
-            setPreset("Custom Range");
+        if (dateRange){
+            if (dateRange !== lastThirty && dateRange !== lastNinety && dateRange !== currMonth){
+                setPreset("Custom Range");
+            }
+            dateRange.from?.setHours(0,0,0,0);
+            dateRange.to?.setHours(0,0,0,0);
+            updateComparisonRange();
         }
-        updateComparisonRange();
     }, [dateRange])
 
 
 
     return(
         <div style={containerStyle}>
-            <div className='flex flex-row justify-left items-center gap-4 mt-2 ml-2'>
+            <div className='flex flex-row justify-left items-center gap-4'>
                 <DateRangePicker date={dateRange} setDate={setDateRange} />
                 <PresetDropdown selected={preset} setSelected={setPreset} options={presetOptions} />
                 <span className='text-sm text-center text-gray-700'>compared to</span>
                 <PresetDropdown selected={comparison} setSelected={setComparison} options={comparisonOptions} />
             </div>
-            <div className='grid grid-cols-5 gap-3'>
-                {chartData?.map((e: {id: string}) => <div key={e.id}>{<Chart chartId={e.id} containerStyle={undefined} />}</div>)}
+            <div className='grid gap-10'>
+                {/* {chartData?.map((e: {id: string}) => <div key={e.id}>{<Chart chartId={e.id} containerStyle={undefined} dateRange={dateRange} />}</div>)} */}
+                {<Chart chartId={"1"} containerStyle={undefined} dateRange={dateRange} />}
             </div>
             <div id="debug" className='flex flex-col items-start gap-5 mt-10 ml-3'>
                 <div className='flex flex-col gap-1 items-start'>
