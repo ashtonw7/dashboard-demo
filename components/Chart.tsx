@@ -19,16 +19,12 @@ interface ChartInfo {
     dateField: {createdAt: string, table: string},
 }
 
-interface DataPoints {
-    [key: string]: number,
-}
-
 export default function Chart({chartId, containerStyle, dateRange}: Props) {
     const supabase = createClientComponentClient();
 
     const [chartInfo, setchartInfo] = useState<ChartInfo | undefined>();
-    const [rawData, setRawData] = useState <DataPoints | undefined>();
-    const [displayData, setDisplayData] = useState <DataPoints | undefined>();
+    const [rawData, setRawData] = useState <Map<string, number> | undefined>();
+    const [displayData, setDisplayData] = useState <Map<string, number> | undefined>();
     const [fetchedDateRange, setFetchedDateRange] = useState<DateRange | undefined>();
 
     function shouldFetchData(){
@@ -39,8 +35,8 @@ export default function Chart({chartId, containerStyle, dateRange}: Props) {
         return true;
     }
 
-    function bucketData(data: DataPoints | undefined){
-        console.log(dateRange?.from, JSON.stringify(data));
+    function bucketData(data: Map<string, number> | undefined, test: boolean){
+        console.log("RANGE: ", dateRange?.from, "DATA: ", "SIZE: ", data?.size, test);
     }
 
     useEffect(() => {
@@ -58,32 +54,38 @@ export default function Chart({chartId, containerStyle, dateRange}: Props) {
     }, []);
 
     useEffect(() => {
-        if (chartInfo && chartInfo.dateField && dateRange && !shouldFetchData()){
+        if (chartInfo && chartInfo.dateField && dateRange && dateRange.to && dateRange.from && !shouldFetchData()){
+            const createdAtField = chartInfo?.dateField.createdAt;
+            const valueField = chartInfo?.sqlQuery;
+
             const getRawData = async () => {
                 let { data }: any = await supabase
                     .from(chartInfo?.dateField.table)
-                    .select([chartInfo?.sqlQuery, chartInfo?.dateField.createdAt].join(', '))
-                    .gt(chartInfo?.dateField.createdAt, sub(dateRange?.from??new Date(), {days: 1}).toISOString())
-                    .lt(chartInfo?.dateField.createdAt, dateRange?.to?.toISOString())
-                    .order(chartInfo?.dateField.createdAt, {ascending: true});
+                    .select([createdAtField, valueField].join(', '))
+                    .gt(createdAtField, sub(dateRange?.from??new Date(), {days: 1}).toISOString())
+                    .lt(createdAtField, dateRange?.to?.toISOString())
+                    .order(createdAtField, {ascending: true});
                 
-                let rawDataTemp: DataPoints = {};
-                data.map((value: number, created_at: string)=>{rawDataTemp[created_at] = value})
+                let rawDataTemp = new Map<string, number>();
+                data.map((e: any)=>{rawDataTemp.set(e[createdAtField], e[valueField])});
+                console.log(rawDataTemp)
                 setRawData(rawDataTemp);
                 setFetchedDateRange({
                     from: dateRange?.from,
                     to: dateRange?.to
                 });
-                bucketData(rawDataTemp);
+                bucketData(rawDataTemp, true);
             };
             getRawData();
-            bucketData(rawData);
+        }
+        else{
+            bucketData(rawData, false);
         }
     }, [chartInfo, dateRange]);
 
     return(
         <div style={containerStyle}>
-            {rawData ? Object.keys(rawData as Object).length : <></>}
+            {rawData ? rawData.size : <></>}
         </div>
     )
 }   
