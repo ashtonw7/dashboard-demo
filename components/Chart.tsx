@@ -45,9 +45,12 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
 
     function shouldFetchData(){
         const today = new Date()
+        if (!dateRange || !dateRange.from || !dateRange.to || !comparisonRange || !comparisonRange.to || !comparisonRange.from){
+            return false;
+        }
 
-        if (!fetchedDateRange || isBefore(dateRange?.from??today, fetchedDateRange?.from!) || isAfter(dateRange?.to??today, fetchedDateRange?.to??today)
-            || !comparisonRange || isBefore(comparisonRange?.from??today, dateRange?.from!) || isAfter(comparisonRange?.to??today, dateRange?.to??today)){
+        if (!fetchedDateRange || isAfter(dateRange!.to!, fetchedDateRange!.to!)
+            || isBefore(comparisonRange!.from!, fetchedDateRange!.from!)){
             return true;
         }
         return false;
@@ -108,6 +111,9 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
         let rangeStart = range.from!;
         let rangeEnd = range.to!;
 
+        const rangeInterval = {start: rangeStart, end: rangeEnd}; 
+        const numDays = intervalToDuration(rangeInterval).days! + 1;
+
         let currDate = rangeStart;
         let endDate = add(rangeEnd, {days: 1});
 
@@ -119,6 +125,8 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
         let valTotal = 0;
         let compValTotal = 0;
         
+        console.log(range, compRange, currDate, endDate);
+
         while(getUsableDateString(currDate) !== getUsableDateString(endDate)){
             const day = currDate.getDay();
             const month = currDate.getMonth();
@@ -192,17 +200,23 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
             currDate = add(currDate, {days: 1});
             compDate = add(compDate, {days: 1});
         }
-        if (currBucket.bucket.value == 0){
-            // @ts-ignore
-            currBucket.bucket.value = null;
+        console.log(data, currBucket, buckets.length)
+        
+        if (buckets.length !== numDays){
+            console.log("HERE!", numDays)
+            if (currBucket.bucket.value == 0){
+                // @ts-ignore
+                currBucket.bucket.value = null;
+            }
+            currBucket.bucket.comparisonValue = Math.round(currBucket.bucket.comparisonValue);
+            if (currBucket.bucket.comparisonValue == 0){
+                // @ts-ignore
+                currBucket.bucket.comparisonValue = null;
+            }
+            currBucket.bucket.name = generateBucketName(rangeEnd, bucketSize);
+            buckets.push(currBucket.bucket);
         }
-        currBucket.bucket.comparisonValue = Math.round(currBucket.bucket.comparisonValue);
-        if (currBucket.bucket.comparisonValue == 0){
-            // @ts-ignore
-            currBucket.bucket.comparisonValue = null;
-        }
-        currBucket.bucket.name = generateBucketName(rangeEnd, bucketSize);
-        buckets.push(currBucket.bucket);
+        buckets[buckets.length - 1].name = generateBucketName(rangeEnd, bucketSize);
 
         setBucketData(buckets)
         setTotal(valTotal);
@@ -242,7 +256,6 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
 
     useEffect(() => {
         if (chartInfo && chartInfo.dateField && dateRange && dateRange.to && dateRange.from && comparisonRange && comparisonRange.to && comparisonRange.from && shouldFetchData()){
-            console.log("HERE");
             const createdAtField = chartInfo?.dateField.createdAt;
             const valueField = chartInfo?.sqlQuery;
 
@@ -265,7 +278,7 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
                 data.map((e: any)=>{rawDataTemp.set(e[createdAtField].slice(0, NUM_DATE_CHARS_IN_ISO), e[valueField])});
                 setRawData(rawDataTemp);
                 setFetchedDateRange({
-                    from: dateRange?.from,
+                    from: comparisonRange?.from,
                     to: dateRange?.to
                 });
                 generateBucketData(rawDataTemp);
