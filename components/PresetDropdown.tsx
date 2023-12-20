@@ -5,20 +5,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useEffect } from "react";
 
 interface Props {
   selected: string,
   setSelected: Function,
-  options: Object, 
+  options: Object,
 }
 
 export function PresetDropdown({selected, setSelected, options}: Props) {
   function updateSelected(selected: string): void{
+    console.log("HERE")
     setSelected(selected);
   }
 
   return(
-    <Select defaultValue={selected} onValueChange={updateSelected}>
+    <Select defaultValue={selected} value={selected} onValueChange={updateSelected}>
       <SelectTrigger className="w-[180px]">
         <SelectValue  placeholder={selected} />
       </SelectTrigger>

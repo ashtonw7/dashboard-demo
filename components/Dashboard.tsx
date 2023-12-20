@@ -3,7 +3,7 @@
 import Chart from './Chart';
 import { useEffect, useState } from 'react';
 import DateRangePicker from './DateRangePicker';
-import { sub, startOfMonth, endOfMonth, intervalToDuration, Interval } from "date-fns"
+import { sub, startOfMonth, endOfMonth, intervalToDuration } from "date-fns"
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { DateRange } from "react-day-picker"
 import { PresetDropdown } from './PresetDropdown';
@@ -86,9 +86,11 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
         const rangeInterval = {start: dateRange?.from??new Date(), end: dateRange?.to??new Date()}; 
         const intervalDuration = intervalToDuration(rangeInterval);
 
-        const from = sub(sub(dateRange?.from??today, {years: intervalDuration.years??0 * 2, months: intervalDuration.months??0 * 2, days: intervalDuration.days??0 * 2}), {days: 1});
+        const dateRangeFrom = new Date(dateRange?.from??today);
 
-        const to = sub(dateRange?.from??today, {days: 1});
+        const from = sub(sub(dateRangeFrom, {years: intervalDuration.years??0 * 2, months: intervalDuration.months??0 * 2, days: intervalDuration.days??0 * 2}), {days: 1});
+
+        const to = sub(dateRangeFrom, {days: 1});
 
         setComparisonRange({
             from: from,
@@ -97,15 +99,17 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
     }
 
     function updateComparisonRange(){
+        const dateRangeFrom = new Date(dateRange?.from??today);
+
         if (comparison === comparisonOptions.prevThirty){
             setComparisonRange({
-                from: sub(dateRange?.from??today, {days: 31}),
+                from: sub(dateRangeFrom, {days: 31}),
                 to: sub(today, {days: 1})
             });
         }
         else if (comparison === comparisonOptions.prevNinety){
             setComparisonRange({
-                from: sub(dateRange?.from??today, {days: 91}),
+                from: sub(dateRangeFrom, {days: 91}),
                 to: sub(today, {days: 1})
             });
         }
@@ -146,7 +150,6 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
             }
             getChartData();
         }
-        setPreviousPeriod;
     }, [dashboardData]);
 
     useEffect(() => {
@@ -175,8 +178,6 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
             if (dateRange !== lastThirty && dateRange !== lastNinety && dateRange !== currMonth){
                 setPreset("Custom Range");
             }
-            dateRange.from?.setHours(0,0,0,0);
-            dateRange.to?.setHours(0,0,0,0);
             updateComparisonRange();
         }
     }, [dateRange])
