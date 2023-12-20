@@ -125,8 +125,6 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
         let valTotal = 0;
         let compValTotal = 0;
         
-        console.log(range, compRange, currDate, endDate);
-
         while(getUsableDateString(currDate) !== getUsableDateString(endDate)){
             const day = currDate.getDay();
             const month = currDate.getMonth();
@@ -200,10 +198,8 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
             currDate = add(currDate, {days: 1});
             compDate = add(compDate, {days: 1});
         }
-        console.log(data, currBucket, buckets.length)
         
         if (buckets.length !== numDays){
-            console.log("HERE!", numDays)
             if (currBucket.bucket.value == 0){
                 // @ts-ignore
                 currBucket.bucket.value = null;
@@ -217,7 +213,7 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
             buckets.push(currBucket.bucket);
         }
         buckets[buckets.length - 1].name = generateBucketName(rangeEnd, bucketSize);
-
+        
         setBucketData(buckets)
         setTotal(valTotal);
         setCompTotal(compValTotal);
@@ -292,7 +288,6 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
 
     return(
         <div style={containerStyle}>
-            {JSON.stringify(bucketData)??<></>}
             {bucketData ?
                 <div className='flex flex-col'>
                     <ChartHeader name={chartInfo!.name} total={total} compTotal={compTotal} />

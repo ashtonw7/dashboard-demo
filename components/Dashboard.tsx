@@ -194,8 +194,8 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
                 <PresetDropdown selected={comparison} setSelected={setComparison} options={comparisonOptions} />
             </div>
             <div className='mt-[5%] flex flex-wrap justify-around'>
-                {/* {chartData?.map((e: {id: string}) => <div key={e.id}>{<Chart chartId={e.id} containerStyle={undefined} dateRange={dateRange} comparisonRange={comparisonRange} />}</div>)} */}
-                {<Chart chartId={"1"} containerStyle={undefined} dateRange={dateRange} comparisonRange={comparisonRange} />}
+                {chartData?.map((e: {id: string}) => <div key={e.id}>{<Chart chartId={e.id} containerStyle={undefined} dateRange={dateRange} comparisonRange={comparisonRange} />}</div>)}
+                {/* {<Chart chartId={"1"} containerStyle={undefined} dateRange={dateRange} comparisonRange={comparisonRange} />} */}
             </div>
             {/* <div id="debug" className='flex flex-col items-start gap-5 mt-10 ml-3'>
                 <div className='flex flex-col gap-1 items-start'>
