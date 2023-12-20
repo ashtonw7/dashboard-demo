@@ -15,7 +15,6 @@ interface Props {
 
 export function PresetDropdown({selected, setSelected, options}: Props) {
   function updateSelected(selected: string): void{
-    console.log("HERE")
     setSelected(selected);
   }
 

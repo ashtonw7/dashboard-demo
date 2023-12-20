@@ -53,7 +53,6 @@ export default function DateRangePicker({date, setDate}: Props) {
                 <Calendar
                     initialFocus
                     mode="range"
-                    defaultMonth={date?.from}
                     selected={date}
                     // @ts-ignore
                     onSelect={setDate}

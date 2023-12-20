@@ -176,6 +176,7 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
     useEffect(() => {
         if (dateRange){
             if (dateRange !== lastThirty && dateRange !== lastNinety && dateRange !== currMonth){
+                if (dateRange.from === dateRange.to){}
                 setPreset("Custom Range");
             }
             updateComparisonRange();
@@ -192,11 +193,11 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
                 <span className='text-sm text-center text-gray-700'>compared to</span>
                 <PresetDropdown selected={comparison} setSelected={setComparison} options={comparisonOptions} />
             </div>
-            <div className='grid gap-10'>
-                {/* {chartData?.map((e: {id: string}) => <div key={e.id}>{<Chart chartId={e.id} containerStyle={undefined} dateRange={dateRange} />}</div>)} */}
-                {<Chart chartId={"1"} containerStyle={undefined} dateRange={dateRange} />}
+            <div className='mt-[5%] flex flex-wrap justify-around'>
+                {/* {chartData?.map((e: {id: string}) => <div key={e.id}>{<Chart chartId={e.id} containerStyle={undefined} dateRange={dateRange} comparisonRange={comparisonRange} />}</div>)} */}
+                {<Chart chartId={"1"} containerStyle={undefined} dateRange={dateRange} comparisonRange={comparisonRange} />}
             </div>
-            <div id="debug" className='flex flex-col items-start gap-5 mt-10 ml-3'>
+            {/* <div id="debug" className='flex flex-col items-start gap-5 mt-10 ml-3'>
                 <div className='flex flex-col gap-1 items-start'>
                     <span className='text-xl text-center text-gray-700'>Preset: {preset}</span>
                     <span className='text-xl text-center text-gray-700'>Comparison: {comparison}</span>
@@ -212,7 +213,7 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
                 <div>
                     <span className='text-xl text-center text-gray-700'>Dashboard Data: {JSON.stringify(dashboardData)}</span>
                 </div>
-            </div>
+            </div> */}
         </div>
     )
 }
