@@ -91,6 +91,8 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
         const from = sub(sub(dateRangeFrom, {years: intervalDuration.years??0 * 2, months: intervalDuration.months??0 * 2, days: intervalDuration.days??0 * 2}), {days: 1});
 
         const to = sub(dateRangeFrom, {days: 1});
+        
+        console.log(from, to)
 
         setComparisonRange({
             from: from,
@@ -103,14 +105,15 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
 
         if (comparison === comparisonOptions.prevThirty){
             setComparisonRange({
-                from: sub(dateRangeFrom, {days: 31}),
-                to: sub(today, {days: 1})
+                from: sub(dateRangeFrom, {days: 30}),
+                to: sub(dateRangeFrom, {days: 1}),
             });
         }
         else if (comparison === comparisonOptions.prevNinety){
+            console.log(sub(dateRangeFrom, {days: 91}), sub(dateRangeFrom, {days: 1}))
             setComparisonRange({
-                from: sub(dateRangeFrom, {days: 91}),
-                to: sub(today, {days: 1})
+                from: sub(dateRangeFrom, {days: 90}),
+                to: sub(dateRangeFrom, {days: 1}),
             });
         }
         else if (comparison === comparisonOptions.prevMonth){
@@ -194,8 +197,8 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
                 <PresetDropdown selected={comparison} setSelected={setComparison} options={comparisonOptions} />
             </div>
             <div className='mt-[5%] flex flex-wrap justify-around'>
-                {chartData?.map((e: {id: string}) => <div key={e.id}>{<Chart chartId={e.id} containerStyle={undefined} dateRange={dateRange} comparisonRange={comparisonRange} />}</div>)}
-                {/* {<Chart chartId={"1"} containerStyle={undefined} dateRange={dateRange} comparisonRange={comparisonRange} />} */}
+                {/* {chartData?.map((e: {id: string}) => <div key={e.id}>{<Chart chartId={e.id} containerStyle={undefined} dateRange={dateRange} comparisonRange={comparisonRange} />}</div>)} */}
+                {<Chart chartId={"1"} containerStyle={undefined} dateRange={dateRange} comparisonRange={comparisonRange} />}
             </div>
             {/* <div id="debug" className='flex flex-col items-start gap-5 mt-10 ml-3'>
                 <div className='flex flex-col gap-1 items-start'>
