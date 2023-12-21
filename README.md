@@ -1,4 +1,4 @@
-Live demo located at: https://dashboard-demo-tau-eight.vercel.app/ 
+Live demo located at: <a href="https://dashboard-demo-tau-eight.vercel.app/" target="_blank">https://dashboard-demo-tau-eight.vercel.app/</a> 
 
 ## Build
 
