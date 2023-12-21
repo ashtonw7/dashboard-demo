@@ -24,7 +24,16 @@ interface ChartInfo {
     name: string,
 }
 
-interface bucketEntry {
+type BucketEntryData = {
+    bucket: {
+        name: string,
+        value: number | null,
+        comparisonValue: number | null,
+    }
+    month: number,
+}
+
+interface BucketEntry {
     name: string,
     value: number | null,
     comparisonValue: number | null,
@@ -50,7 +59,7 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
     // stores the raw data retrieved from API
     const [rawData, setRawData] = useState <Map<string, number> | undefined>();
     // stores the bucketized data for display
-    const [bucketData, setBucketData] = useState <bucketEntry[] | undefined>();
+    const [bucketData, setBucketData] = useState <BucketEntry[] | undefined>();
     // stores current range of fetched data
     const [fetchedDateRange, setFetchedDateRange] = useState<DateRange | undefined>();
     // totals of the values in range
@@ -113,11 +122,11 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
         return {
             bucket: {
                 name: '',
-                value: 0,
-                comparisonValue: 0,
+                value: null,
+                comparisonValue: null,
             },
             month: 0,
-        }
+        } as BucketEntryData
     }
 
     // Generates a name for the bucket (used for plotting)
@@ -130,9 +139,9 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
 
     // Loops through the data and compiles the values into necessary buckets
     function buildBucketDataStore(range: DateRange, compRange: DateRange, data: Map<string, number>, bucketSize: string){  
-        let buckets: bucketEntry[] = [];
+        let buckets: BucketEntry[] = [];
 
-        // data for comparisons
+        // data for comparisons and formatting
         let rangeStart = range.from!;
         let rangeEnd = range.to!;
 
@@ -172,18 +181,29 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
             // Add value to bucket if it exists
             if (getValFromDate(currDate, data)){
                 let value = getValFromDate(currDate, data);
-                currBucket.bucket.value += value;
+                if (!currBucket.bucket.value){
+                    currBucket.bucket.value = value;
+                }
+                else{
+                    currBucket.bucket.value += value;
+                }
                 valTotal += value;
             }
 
             // Add the comparison range value to bucket if it exists
             if (isBefore(compDate, rangeStart) && getValFromDate(compDate, data)){
                 let value = getValFromDate(compDate, data);
-                currBucket.bucket.comparisonValue += value;
+                if (!currBucket.bucket.comparisonValue){
+                    currBucket.bucket.comparisonValue = value;
+                }
+                else{
+                    currBucket.bucket.comparisonValue += value;
+                }
                 compValTotal += value
             }
 
-            // Names are generated just for the first and last buckets for
+            // Names are generated just for the first and last buckets for graphing keys to match example (could be easily adjusted to be something like
+            // a date range if all buckets should have an x-axis)
             if (buckets.length === 0){
                 currBucket.bucket.name = generateBucketName(rangeStart, bucketSize);
             }
@@ -191,49 +211,34 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
                 currBucket.bucket.name = count.toString();
             }
             
-
+            // if we've reached the end of a bucket, store it and start the next one
             if (bucketSize === "DAYS"){
-                currBucket.bucket.value = Math.round(currBucket.bucket.value);
-                if (currBucket.bucket.value == 0){
-                    // @ts-ignore
-                    currBucket.bucket.value = null;
+                if (currBucket.bucket.value){
+                    currBucket.bucket.value = Math.round(currBucket.bucket.value);
                 }
-                currBucket.bucket.comparisonValue = Math.round(currBucket.bucket.comparisonValue);
-                if (currBucket.bucket.comparisonValue == 0){
-                    // @ts-ignore
-                    currBucket.bucket.comparisonValue = null;
+                if (currBucket.bucket.comparisonValue){
+                    currBucket.bucket.comparisonValue = Math.round(currBucket.bucket.comparisonValue);
                 }
-
                 buckets.push(currBucket.bucket);
                 currBucket = getEmptyBucketData();
             }
             else if (bucketSize === "WEEKS" && currDate !== endDate && count % 7 === 0){
-                currBucket.bucket.value = Math.round(currBucket.bucket.value);
-                if (currBucket.bucket.value == 0){
-                    // @ts-ignore
-                    currBucket.bucket.value = null;
+                if (currBucket.bucket.value){
+                    currBucket.bucket.value = Math.round(currBucket.bucket.value);
                 }
-                currBucket.bucket.comparisonValue = Math.round(currBucket.bucket.comparisonValue);
-                if (currBucket.bucket.comparisonValue == 0){
-                    // @ts-ignore
-                    currBucket.bucket.comparisonValue = null;
+                if (currBucket.bucket.comparisonValue){
+                    currBucket.bucket.comparisonValue = Math.round(currBucket.bucket.comparisonValue);
                 }
-
                 buckets.push(currBucket.bucket);
                 currBucket = getEmptyBucketData();
             }
             else if (bucketSize === "MONTHS" && currBucket.month !== month){
-                currBucket.bucket.value = Math.round(currBucket.bucket.value);
-                if (currBucket.bucket.value == 0){
-                    // @ts-ignore
-                    currBucket.bucket.value = null;
+                if (currBucket.bucket.value){
+                    currBucket.bucket.value = Math.round(currBucket.bucket.value);
                 }
-                currBucket.bucket.comparisonValue = Math.round(currBucket.bucket.comparisonValue);
-                if (currBucket.bucket.comparisonValue == 0){
-                    // @ts-ignore
-                    currBucket.bucket.comparisonValue = null;
+                if (currBucket.bucket.comparisonValue){
+                    currBucket.bucket.comparisonValue = Math.round(currBucket.bucket.comparisonValue);
                 }
-
                 buckets.push(currBucket.bucket);
                 currBucket = getEmptyBucketData();
                 currBucket.month = month;
@@ -241,20 +246,22 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
             currDate = add(currDate, {days: 1});
             compDate = add(compDate, {days: 1});
         }
+
+        // if we have a leftover bucket (didn't end on an even week or month), add it
         if (buckets.length !== numBuckets){
-            if (currBucket.bucket.value == 0){
-                // @ts-ignore
-                currBucket.bucket.value = null;
+            if (currBucket.bucket.value){
+                currBucket.bucket.value = Math.round(currBucket.bucket.value);
             }
-            currBucket.bucket.comparisonValue = Math.round(currBucket.bucket.comparisonValue);
-            if (currBucket.bucket.comparisonValue == 0){
-                // @ts-ignore
-                currBucket.bucket.comparisonValue = null;
+            if (currBucket.bucket.comparisonValue){
+                currBucket.bucket.comparisonValue = Math.round(currBucket.bucket.comparisonValue);
             }
             buckets.push(currBucket.bucket);
         }
+        // set the name of the final bucket
         buckets[buckets.length - 1].name = generateBucketName(rangeEnd, bucketSize);
         
+
+        // if the last comparison range isn't in the last bucket, make it null so it won't be graphed 
         let compDuration = intervalToDuration(compInterval);
         let compDays = compDuration!.years! * 365 + compDuration!.months! * 31 + compDuration!.days!;
 
@@ -264,12 +271,14 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
         if (compDays < rangeDays ){
             buckets[buckets.length - 1].comparisonValue = null;
         }
-        console.log("AND HERE", buckets);
+
+        // set values for display
         setBucketData(buckets)
         setTotal(valTotal);
         setCompTotal(compValTotal);
     }
 
+    // buidls buckets depending on the bucket size
     function generateBucketData(data: Map<string, number> | undefined){
         if (data && dateRange && dateRange.to && dateRange.from && getUsableDateString(dateRange.from) !== getUsableDateString(dateRange.to) && comparisonRange && comparisonRange.to && comparisonRange.from){
             const bucketSize = getBucketSize(dateRange);
@@ -285,6 +294,7 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
         }
     }
 
+    // fetch our chart data
     useEffect(() => {
         const getChartData = async () => {
             let { data }: any = await supabase.from('chart').select('*').eq('id', chartId);
@@ -301,10 +311,12 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
         getChartData();
     }, []);
 
+    // bucketize data if new data is fetched (used on initial call)
     useEffect(() => {
         generateBucketData(rawData);
     }, [rawData]);
 
+    // whenever our date range or comparison range changes, fetch new data if necessary/generate bucket data if not
     useEffect(() => {
         if (chartInfo && chartInfo.dateField && dateRange && dateRange.to && dateRange.from && comparisonRange && comparisonRange.to && comparisonRange.from && shouldFetchData()){
             const createdAtField = chartInfo?.dateField.createdAt;

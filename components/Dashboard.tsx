@@ -60,14 +60,18 @@ const prevMonth = {
 
 export default function Dashboard({name, containerStyle, onClickDashboardItem}: Props) {
     const supabase = createClientComponentClient();
+    
+    // stores data from API
     const [dashboardData, setDashboardData] = useState<DashboardData | undefined>();
     const [chartData, setChartData] = useState([]);
 
+    // stores the user's selections from preset dropdown
     const [preset, setPreset] = useState('');
     const [comparison, setComparison] = useState(comparisonOptions.prevPeriod);
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
     const [comparisonRange, setComparisonRange] = useState<DateRange | undefined>();
 
+    // sets the date range to the dashboard's preset
     function setInitialDateRange(dashboardPreset: string){
         if (dashboardPreset === 'LAST_90_DAYS'){
             setPreset(presetOptions.lastNinety);
@@ -82,6 +86,7 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
         }
     }
 
+    // calculates the previous period for custom ranges from the calendar
     function setPreviousPeriod(){
         const rangeInterval = {start: dateRange?.from??new Date(), end: dateRange?.to??new Date()}; 
         const intervalDuration = intervalToDuration(rangeInterval);
@@ -98,6 +103,7 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
         })
     }
 
+    // updates the comparison range based on the selection
     function updateComparisonRange(){
         const dateRangeFrom = new Date(dateRange?.from??today);
 
@@ -109,7 +115,7 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
         }
         else if (comparison === comparisonOptions.prevNinety){
             setComparisonRange({
-                from: sub(dateRangeFrom, {days: 90}),
+                from: sub(dateRangeFrom, {days: 91}),
                 to: sub(dateRangeFrom, {days: 1}),
             });
         }
@@ -121,6 +127,7 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
         }
     }
 
+    // fetches dashboard data on load
     useEffect(() => {
         const getDashboardData = async () => {
             let { data }: any = await supabase.
@@ -137,6 +144,7 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
         getDashboardData();
     }, []);
 
+    // fetches chart data once we have dashboard data
     useEffect(() => {
         if (dashboardData){
             setInitialDateRange(dashboardData.initialDateRange);
@@ -152,6 +160,7 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
         }
     }, [dashboardData]);
 
+    // updates the date range (passed down to chart) when a preset selection is made
     useEffect(() => {
         if (preset){
             if (preset === presetOptions.lastThirty){
@@ -167,12 +176,14 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
         }
     }, [preset])
 
+    // updates the comparison range (passed down to chart) when a new selection is made
     useEffect(() => {
         if (comparison){
             updateComparisonRange();
         }
     }, [comparison]);
 
+    // updates the date range (passed down to chart) when a custom calendar selection is made
     useEffect(() => {
         if (dateRange){
             if (dateRange !== lastThirty && dateRange !== lastNinety && dateRange !== currMonth){
@@ -195,25 +206,7 @@ export default function Dashboard({name, containerStyle, onClickDashboardItem}: 
             </div>
             <div className='mt-[5%] flex flex-wrap justify-around'>
                 {chartData?.map((e: {id: string}) => <div key={e.id}>{<Chart chartId={e.id} containerStyle={undefined} dateRange={dateRange} comparisonRange={comparisonRange} />}</div>)}
-                {/* {<Chart chartId={"1"} containerStyle={undefined} dateRange={dateRange} comparisonRange={comparisonRange} />} */}
             </div>
-            {/* <div id="debug" className='flex flex-col items-start gap-5 mt-10 ml-3'>
-                <div className='flex flex-col gap-1 items-start'>
-                    <span className='text-xl text-center text-gray-700'>Preset: {preset}</span>
-                    <span className='text-xl text-center text-gray-700'>Comparison: {comparison}</span>
-                </div>
-                <div className='flex flex-col gap-1 items-start'>
-                    <span className='text-xl text-center text-gray-700'>Date Range From: {dateRange?.from?.toString()}</span>
-                    <span className='text-xl text-center text-gray-700'>Date Range To: {dateRange?.to?.toString()}</span>
-                </div>
-                <div className='flex flex-col gap-1 items-start'>
-                    <span className='text-xl text-center text-gray-700'>Comparison Range From: {comparisonRange?.from?.toString()}</span>
-                    <span className='text-xl text-center text-gray-700'>Comparison Range To: {comparisonRange?.to?.toString()}</span>
-                </div>
-                <div>
-                    <span className='text-xl text-center text-gray-700'>Dashboard Data: {JSON.stringify(dashboardData)}</span>
-                </div>
-            </div> */}
         </div>
     )
 }
