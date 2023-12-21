@@ -57,6 +57,8 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
     const [total, setTotal] = useState(0);
     const [compTotal, setCompTotal] = useState(0);
 
+    const [updateBuckets, setUpdateBuckets] = useState(false);
+
     // check if data is stale and needs to be fetched
     function shouldFetchData(){
         // if we don't have ranges, don't fetch
@@ -156,7 +158,6 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
         let compDate = compRange.from!;
 
         let currBucket = getEmptyBucketData();
-        currBucket.month = currDate.getMonth();
 
         // total values of bucket 
         let valTotal = 0;
@@ -253,7 +254,6 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
             buckets.push(currBucket.bucket);
         }
         buckets[buckets.length - 1].name = generateBucketName(rangeEnd, bucketSize);
-        console.log("HERE", compRange.from, compRange.to)
         
         let compDuration = intervalToDuration(compInterval);
         let compDays = compDuration!.years! * 365 + compDuration!.months! * 31 + compDuration!.days!;
@@ -262,10 +262,9 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
         let rangeDays = rangeDuration!.years! * 365 + rangeDuration!.months! * 31 + rangeDuration!.days!;
         
         if (compDays < rangeDays ){
-            console.log(compRange.to! !== sub(rangeStart, {days: 1}))
             buckets[buckets.length - 1].comparisonValue = null;
         }
-
+        console.log("AND HERE", buckets);
         setBucketData(buckets)
         setTotal(valTotal);
         setCompTotal(compValTotal);
@@ -303,6 +302,10 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
     }, []);
 
     useEffect(() => {
+        generateBucketData(rawData);
+    }, [rawData]);
+
+    useEffect(() => {
         if (chartInfo && chartInfo.dateField && dateRange && dateRange.to && dateRange.from && comparisonRange && comparisonRange.to && comparisonRange.from && shouldFetchData()){
             const createdAtField = chartInfo?.dateField.createdAt;
             const valueField = chartInfo?.sqlQuery;
@@ -329,11 +332,10 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
                     from: comparisonRange?.from,
                     to: dateRange?.to
                 });
-                generateBucketData(rawDataTemp);
             };
             getRawData();
         }
-        else{
+        else {
             generateBucketData(rawData);
         }
     }, [chartInfo, dateRange, comparisonRange]);
@@ -342,7 +344,6 @@ export default function Chart({chartId, containerStyle, dateRange, comparisonRan
         <div style={containerStyle}>
             {bucketData ?
                 <div className='flex flex-col'>
-                    {JSON.stringify(bucketData)}
                     <ChartHeader name={chartInfo!.name} total={total} compTotal={compTotal} />
                     <LineChart width={500} height={200} data={bucketData} margin={{ top: 30, right: 0, left: 0, bottom: 5 }}>
                         <Line type="linear" dataKey="comparisonValue" stroke="#a7abb5" strokeWidth={3} dot={false} />
