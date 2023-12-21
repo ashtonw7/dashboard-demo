@@ -33,7 +33,12 @@ export default function Home() {
 
   return (
     <main>
-      <Dashboard name={dashboardName} containerStyle={dashboardStyles} onClickDashboardItem={()=>''}/>
+      <div className='h-[100vh] flex flex-col justify-between'>
+        <Dashboard name={dashboardName} containerStyle={dashboardStyles} onClickDashboardItem={()=>''}/>
+        <div className='text-xl mb-[10%] ml-[1%]'>
+          A dashboard demo pulling from various databases.<br/>Source code: <a className='text-blue-500 hover:text-blue-700 underline' href="https://github.com/ashtonw7/dashboard-demo/tree/main" target="_blank">GitHub</a>
+        </div>
+      </div>
     </main>
   )
 }
